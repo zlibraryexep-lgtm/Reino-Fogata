@@ -27,7 +27,9 @@ main{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-colu
 .d{position:relative;text-align:center;padding:7px 0;cursor:pointer;border-radius:4px;font-size:17px;border:1px solid transparent}
 .d:hover{background:#d8bd7e;border-color:var(--gold)}
 .d.today{background:var(--blue);color:#f0e0b8}
-.d.has::after{content:"";position:absolute;bottom:2px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--red);box-shadow:0 0 0 1px var(--gold)}
+.d.has:not(.today){background:var(--ct);box-shadow:inset 0 -3px 0 var(--c)}
+.dots{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:center;gap:2px}
+.dots b{width:6px;height:6px;border-radius:50%;box-shadow:0 0 0 1px #fffa}
 .d.has{font-weight:700}
 #modal,#oracle,#bkt,#radio,#lb,#news{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
 #modal.show,#oracle.show,#bkt.show,#radio.show,#lb.show,#news.show{display:flex}
@@ -72,6 +74,13 @@ button.on{text-shadow:none}
 .nc a{font-family:'Cinzel',serif;font-weight:700;color:var(--blue);text-decoration:none;font-size:16px;line-height:1.25}
 .nc a:hover{text-decoration:underline}.nc p{margin:6px 0;font-size:15px}
 .nc small{font-family:'Cinzel',serif;color:var(--red);font-size:11px;letter-spacing:1px}
+.legend{display:flex;gap:6px 14px;justify-content:center;flex-wrap:wrap;padding:10px 12px 0;font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--blue);position:relative;z-index:1}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid var(--gold)}
+.pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.pick button{color:#fff;font-size:12px;padding:4px 10px;border-color:transparent;text-shadow:0 1px 1px #0008}
+.pick button.sel{outline:3px solid var(--ink);outline-offset:1px}
+.ev{border-left-width:6px;flex-wrap:nowrap}.ev span{flex:1;min-width:0;word-break:break-word}
+.ev .chip{color:#fff;font-size:10px;padding:2px 7px;border-color:transparent;flex:none;text-shadow:0 1px 1px #0008}
 </style>
 </head>
 <body>
@@ -92,8 +101,9 @@ button.on{text-shadow:none}
     <button id="newb">📰 Tablón</button>
   </div>
 </header>
+<div class="legend" id="leg"></div>
 <main id="cal"></main>
-<p class="note">Toca un día para añadir o ver eventos. Se guardan en este navegador: usa ⬇ Respaldo para descargarlos y ⬆ Cargar para recuperarlos.</p>
+<p class="note">Toca un día para añadir o ver eventos y elige su prioridad. Se guardan en este navegador: usa ⬇ Respaldo para descargarlos y ⬆ Cargar para recuperarlos.</p>
 <section class="codex"><h2>Códice ilustrado</h2><div class="frames">
   <figure class="frame"><img id="imk" alt="Caballero medieval cabalgando hacia un castillo al amanecer"><figcaption>Hazlo por la leyenda</figcaption></figure>
   <figure class="frame"><img id="imc" alt="Pintura de la Última Cena"><figcaption>La Última Cena</figcaption></figure>
@@ -128,6 +138,7 @@ button.on{text-shadow:none}
 </div></div>
 <div id="modal"><div class="box">
   <h3 id="mt"></h3><div id="list"></div>
+  <div class="pick" id="pick"></div>
   <div class="add"><input id="txt" placeholder="Nuevo evento…" maxlength="120"><button id="addb">Añadir</button></div>
   <div style="text-align:right;margin-top:12px"><button id="close">Cerrar</button></div>
 </div></div>
@@ -136,7 +147,19 @@ const MES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Se
 const DOW=["L","M","M","J","V","S","D"];
 const YEARS=[2026,2027,2028,2029,2030];
 let year=YEARS.includes(new Date().getFullYear())?new Date().getFullYear():2026,sel=null,store={};
-try{store=JSON.parse(localStorage.getItem("medieval-ev")||"{}")}catch(e){store={}}
+const PRI=[{n:"Urgente",c:"#b3261e"},{n:"Importante",c:"#d9822b"},{n:"Normal",c:"#2f5d9e"},{n:"Baja",c:"#4f7a3a"}];
+// Cada evento: {t:texto, p:prioridad 0-3}. Acepta también el formato antiguo (texto suelto = Normal).
+function normStore(o){
+  const r={};
+  for(const k in o){
+    if(!/^\d{4}-\d{1,2}-\d{1,2}$/.test(k)||!Array.isArray(o[k]))continue;
+    const l=o[k].map(x=>typeof x=="string"?{t:x,p:2}:(x&&typeof x.t=="string"?{t:x.t,p:[0,1,2,3].includes(x.p)?x.p:2}:null))
+      .filter(x=>x&&x.t.trim()).map(x=>({t:x.t.slice(0,120),p:x.p}));
+    if(l.length)r[k]=l.sort((a,b)=>a.p-b.p);
+  }
+  return r;
+}
+try{store=normStore(JSON.parse(localStorage.getItem("medieval-ev")||"{}"))}catch(e){store={}}
 function save(){try{localStorage.setItem("medieval-ev",JSON.stringify(store))}catch(e){}}
 const key=(y,m,d)=>y+"-"+(m+1)+"-"+d;
 function render(){
@@ -152,9 +175,12 @@ function render(){
     for(let d=1;d<=n;d++){
       const k=key(year,m,d),c=["d"];
       if((off+d-1)%7==6)c.push("s");
-      if(store[k]&&store[k].length)c.push("has");
+      const ev=store[k]||[];if(ev.length)c.push("has");
       if(now.getFullYear()==year&&now.getMonth()==m&&now.getDate()==d)c.push("today");
-      h+='<div class="'+c.join(" ")+'" data-m="'+m+'" data-d="'+d+'">'+d+'</div>';
+      let st="",dots="";
+      if(ev.length){const top=PRI[ev[0].p].c;st=' style="--c:'+top+';--ct:'+top+'38"';
+        dots='<i class="dots">'+[...new Set(ev.map(e=>e.p))].map(q=>'<b style="background:'+PRI[q].c+'"></b>').join("")+'</i>'}
+      h+='<div class="'+c.join(" ")+'" data-m="'+m+'" data-d="'+d+'"'+st+'>'+d+dots+'</div>';
     }
     box.innerHTML=h+"</div>";cal.appendChild(box);
   }
@@ -163,20 +189,28 @@ function openDay(m,d){
   sel=[m,d];document.getElementById("mt").textContent=d+" de "+MES[m]+", "+year;
   drawList();document.getElementById("modal").classList.add("show");
 }
+let npri=2;
+function drawPick(){
+  const pk=document.getElementById("pick");pk.innerHTML="";
+  PRI.forEach((q,i)=>{const b=document.createElement("button");b.textContent=q.n;b.style.background=q.c;b.className=i==npri?"sel":"";b.onclick=()=>{npri=i;drawPick()};pk.appendChild(b)});
+}
 function drawList(){
   const k=key(year,sel[0],sel[1]),l=document.getElementById("list");l.innerHTML="";
-  (store[k]||[]).forEach((t,i)=>{
-    const e=document.createElement("div");e.className="ev";
-    const s=document.createElement("span");s.textContent=t;
+  (store[k]||[]).forEach((x,i)=>{
+    const e=document.createElement("div");e.className="ev";e.style.borderLeftColor=PRI[x.p].c;e.style.background=PRI[x.p].c+"26";
+    const c=document.createElement("button");c.className="chip";c.style.background=PRI[x.p].c;c.textContent=PRI[x.p].n;c.title="Toca para cambiar la prioridad";
+    c.onclick=()=>{x.p=(x.p+1)%4;store[k].sort((a,b)=>a.p-b.p);save();drawList();render()};
+    const s=document.createElement("span");s.textContent=x.t;
     const b=document.createElement("button");b.textContent="✕";
     b.onclick=()=>{store[k].splice(i,1);if(!store[k].length)delete store[k];save();drawList();render()};
-    e.append(s,b);l.appendChild(e);
+    e.append(c,s,b);l.appendChild(e);
   });
   if(!l.children.length)l.innerHTML="<p>Sin eventos este día.</p>";
+  drawPick();
 }
 function addEv(){
   const t=document.getElementById("txt"),v=t.value.trim();if(!v)return;
-  const k=key(year,sel[0],sel[1]);(store[k]=store[k]||[]).push(v);
+  const k=key(year,sel[0],sel[1]),l=store[k]=store[k]||[];l.push({t:v,p:npri});l.sort((a,b)=>a.p-b.p);
   t.value="";save();drawList();render();
 }
 document.getElementById("cal").onclick=e=>{const t=e.target.closest(".d");if(t)openDay(+t.dataset.m,+t.dataset.d)};
@@ -185,6 +219,7 @@ document.getElementById("txt").onkeydown=e=>{if(e.key=="Enter")addEv()};
 document.getElementById("close").onclick=()=>document.getElementById("modal").classList.remove("show");
 document.getElementById("modal").onclick=e=>{if(e.target.id=="modal")e.target.classList.remove("show")};
 YEARS.forEach(y=>{const b=document.createElement("button");b.id="y"+y;b.textContent=y;b.onclick=()=>{year=y;render()};document.getElementById("years").appendChild(b)});
+document.getElementById("leg").innerHTML=PRI.map(q=>'<span><i style="background:'+q.c+'"></i>'+q.n+'</span>').join("");
 render();
 
 /* ---- Imágenes ---- */
@@ -196,7 +231,7 @@ document.querySelectorAll(".frame img").forEach(i=>i.onclick=()=>{document.getEl
 document.getElementById("lb").onclick=e=>e.currentTarget.classList.remove("show");
 
 /* ---- Respaldo: descargar y cargar ---- */
-const backupText=()=>JSON.stringify({app:"calendario-medieval",version:1,exportado:new Date().toISOString(),eventos:store},null,2);
+const backupText=()=>JSON.stringify({app:"calendario-medieval",version:2,exportado:new Date().toISOString(),eventos:store},null,2);
 async function exportBackup(){
   const txt=backupText(),name="respaldo-calendario-medieval-"+new Date().toISOString().slice(0,10)+".json";
   try{
@@ -218,15 +253,10 @@ function importText(txt){
     try{
       const d=JSON.parse(txt.replace(/^\uFEFF/,'')),ev=d&&d.eventos;
       if(!ev||typeof ev!=="object"||Array.isArray(ev))throw 0;
-      const clean={};let n=0;
-      for(const k in ev){
-        if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(k)&&Array.isArray(ev[k])){
-          const l=ev[k].filter(x=>typeof x=="string"&&x.trim()).map(x=>x.slice(0,120));
-          if(l.length){clean[k]=l;n+=l.length}
-        }
-      }
+      const clean=normStore(ev);let n=0;
+      for(const k in clean)n+=clean[k].length;
       if(confirm("Se encontraron "+n+" eventos.\n\nAceptar = COMBINAR con los actuales\nCancelar = más opciones")){
-        for(const k in clean){const cur=store[k]=store[k]||[];clean[k].forEach(t=>{if(!cur.includes(t))cur.push(t)})}
+        for(const k in clean){const cur=store[k]=store[k]||[];clean[k].forEach(t=>{if(!cur.some(y=>y.t==t.t))cur.push(t)});cur.sort((a,b)=>a.p-b.p)}
       }else if(confirm("¿REEMPLAZAR todos tus eventos actuales por los del archivo?\nAceptar = reemplazar · Cancelar = no hacer nada")){
         store=clean;
       }else return;
