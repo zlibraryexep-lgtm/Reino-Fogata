@@ -1,0 +1,25 @@
+name: Noticias diarias
+on:
+  schedule:
+    - cron: "0 11 * * *"   # todos los días 11:00 UTC
+  workflow_dispatch:        # botón "Run workflow" para probar a mano
+permissions:
+  contents: write
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generar news.json
+        run: python scripts/noticias.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # opcional: traduce al español
+      - name: Guardar cambios
+        run: |
+          git config user.name "noticias-bot"
+          git config user.email "noticias-bot@users.noreply.github.com"
+          git add news.json
+          git diff --staged --quiet || (git commit -m "Noticias del día" && git push)
