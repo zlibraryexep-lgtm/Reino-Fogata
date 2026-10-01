@@ -112,6 +112,26 @@ button.on{background:linear-gradient(#9a1f33,#6a1220);color:#f6ecd2;box-shadow:i
 #pmset input{width:64px;font:inherit;font-size:16px;padding:4px;border:1px solid var(--gold);background:#fbf3dc;color:var(--ink);border-radius:2px;text-align:center}
 @media(max-width:700px){#pmt{font-size:28px}}
 @media(max-width:700px){h1{letter-spacing:1px;font-size:clamp(24px,7.2vw,34px)}#pomo{margin-left:12px;margin-right:12px}}
+/* ---- Ventanas más amplias en navegador de escritorio ---- */
+@media(min-width:900px){
+.box{max-width:780px;max-height:90vh;padding:30px 36px;font-size:20px}
+.box h3{font-size:38px;margin-bottom:14px}
+#modal .box{max-width:640px}
+#oracle .box{max-width:860px}
+.ban{height:190px;margin:-30px -36px 18px}
+.q{font-size:32px;line-height:1.4;margin:20px 0 12px}
+.src{font-size:17px}
+.sub{font-size:15px}
+.tabs{gap:8px;margin-bottom:12px}
+.tabs button,.pick button{font-size:14px;padding:8px 16px}
+.st{font-size:17px;padding:12px 18px;margin:8px 0}
+#rst{font-size:16px}
+.ev{font-size:19px;padding:12px 16px}
+.add input{font-size:18px;padding:10px 12px}
+.nc{padding:18px 20px}.nc a{font-size:21px}.nc p{font-size:18px}.nc small{font-size:12px}
+.box>div button{font-size:14px;padding:8px 18px}
+}
+@media(min-width:1400px){.box{max-width:920px}#oracle .box{max-width:980px}}
 </style>
 </head>
 <body>
@@ -391,64 +411,72 @@ document.getElementById("oclose").onclick=()=>document.getElementById("oracle").
 document.getElementById("oracle").onclick=e=>{if(e.target.id=="oracle")e.target.classList.remove("show")};
 
 /* ---- Radio: emisoras públicas de EE. UU. (cada una con enlaces alternos) ---- */
-const AC="https://knkx-live-a.edge.audiocdn.com/";
+const AC="https://knkx-live-a.edge.audiocdn.com/",AW="https://live.amperwave.net/direct/",RF="https://live02.rfi.fr/",ST="https://playerservices.streamtheworld.com/api/livestream-redirect/";
+const WW="https://wtmd-ice.streamguys1.com/";
+const COPE=["https://wecast-m01-03.flumotion.com/copesedes/madrid.mp3","https://wecast-b01-03.flumotion.com/copesedes/madrid.mp3","https://wecast-b01-07.flumotion.com/copesedes/madrid.mp3","https://flucast-m04-06.flumotion.com/cope/net1.mp3"];
 const RADIO=[
 {n:"🎷 Jazz",s:[
-["WBGO Jazz 88.3 (Newark, NJ)",["https://ais-sa8.cdnstream1.com/3629_128.mp3","https://ais-sa8.cdnstream1.com/3629_64.aac"]],
-["Jazz24 (KNKX, Seattle)",[AC+"6285_128k",AC+"6285_64k",AC+"6285_48k"]],
-["KNKX 88.5 (jazz, blues y noticias)",[AC+"6284_128k",AC+"6284_64k"]],
+["WBGO Jazz 88.3 (Newark, NJ)",["https://ais-sa8.cdnstream1.com/3629_128.mp3","https://wbgo.streamguys1.com/wbgo128","https://ais-sa8.cdnstream1.com/3629_64.aac"]],
+["Jazz24 (KNKX, Seattle)",[AC+"6285_128k",AW+"ppm-jazz24mp3-ibc1",AC+"6285_64k",AW+"ppm-jazz24aac-ibc1",AC+"6285_48k"]],
+["KNKX 88.5 (jazz, blues y noticias)",[AC+"6284_128k",AW+"ppm-knkxfmmp3-ibc1",AC+"6284_64k",AW+"ppm-knkxfmaac-ibc1"]],
 ["New Standards (WNYC)",["https://tjc.wnyc.org/js-stream","https://tjc.wnyc.org/js-stream.aac"]]]},
 {n:"🎻 Clásica",s:[
 ["WQXR 105.9 (Nueva York)",["https://stream.wqxr.org/wqxr","https://stream.wqxr.org/wqxr.aac"]],
 ["Operavore · ópera (WQXR)",["https://opera-stream.wqxr.org/operavore","https://opera-stream.wqxr.org/operavore.aac"]],
-["New Sounds (WQXR)",["https://q2stream.wqxr.org/q2","https://q2stream.wqxr.org/q2.aac"]]]},
+["New Sounds (WQXR)",["https://q2stream.wqxr.org/q2","https://q2stream.wqxr.org/q2.aac"]],
+["All Classical (WYPR)",[WW+"wypr-3-mp3",WW+"wypr-3"]]]},
 {n:"📰 Noticias EE. UU.",s:[
 ["NPR · programa nacional",["https://npr-ice.streamguys1.com/live.mp3"]],
 ["WNYC 93.9 FM (Nueva York)",["https://fm939.wnyc.org/wnycfm","https://fm939.wnyc.org/wnycfm.aac"]],
 ["WNYC 820 AM (Nueva York)",["https://am820.wnyc.org/wnycam","https://am820.wnyc.org/wnycam.aac"]],
-["WYPR 88.1 (Baltimore, NPR)",["https://wtmd-ice.streamguys1.com/wypr-1-mp3","https://wtmd-ice.streamguys1.com/wypr-1"]]]},
+["WYPR 88.1 (Baltimore, NPR)",[WW+"wypr-1-mp3",WW+"wypr-1"]]]},
 {n:"🌍 Internacional",s:[
 ["BBC World Service (en inglés)",["https://stream.live.vc.bbcmedia.co.uk/bbc_world_service","http://stream.live.vc.bbcmedia.co.uk/bbc_world_service"]],
-["RFI Español (Radio Francia Internacional)",["https://rfienespagnol64k.ice.infomaniak.ch/rfienespagnol-64.mp3","http://rfienespagnol64k.ice.infomaniak.ch/rfienespagnol-64.mp3"]],
-["RFI Monde (en francés)",["https://live-reflector.ice.infomaniak.ch/rfimonde-64.mp3"]]]},
+["RFI Español (Radio Francia Internacional)",[RF+"rfienespagnol-64.mp3","https://rfienespagnol64k.ice.infomaniak.ch/rfienespagnol-64.mp3"]],
+["RFI Monde (en francés)",[RF+"rfimonde-64.mp3","https://rfimonde64k.ice.infomaniak.ch/rfimonde-64.mp3","https://live-reflector.ice.infomaniak.ch/rfimonde-64.mp3"]]]},
 {n:"🇪🇸 En español",s:[
-["Cadena SER (España)",["https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3","https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER_ALT1.mp3","https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER_ALT2.mp3"]],
-["COPE (España)",["https://flucast-m04-06.flumotion.com/cope/net1.mp3","https://flucast-m04-06.flumotion.com/cope/net2.mp3"]],
-["esRadio (España)",["https://livestreaming3.esradio.fm/stream64.mp3"]]]}
+["Cadena SER (España)",[ST+"CADENASER.mp3",ST+"CADENASER_ALT1.mp3",ST+"CADENASER_ALT2.mp3",ST+"SER_MADRID.mp3"]],
+["COPE (España)",COPE],
+["esRadio (España)",["https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-low.mp3","https://livestreaming3.esradio.fm/stream64.mp3","https://livestreaming.esradio.fm/stream64.mp3"]],
+["Radio Nacional (RNE)",["https://rne.rtveradio.cires21.com/rne_hc.mp3"]]]}
 ];
-let rcat=0,rau=null,rcur=null,rname="",rurls=[],rid=0,rtm=null;
+const rau=new Audio();let rcat=0,rcur=null,rname="",rurls=[],rid=0,rtm=null,rtry=0,rgot=false;
 const rst=document.getElementById("rst"),radb=document.getElementById("radb");
 function drawRadio(){
   const tb=document.getElementById("rtabs"),l=document.getElementById("rlist");tb.innerHTML="";l.innerHTML="";
   RADIO.forEach((c,i)=>{const b=document.createElement("button");b.textContent=c.n;b.className=i==rcat?"on":"";b.onclick=()=>{rcat=i;drawRadio()};tb.appendChild(b)});
   RADIO[rcat].s.forEach(([n,u])=>{const b=document.createElement("button");b.className="st"+(rcur==u[0]?" on":"");b.textContent=(rcur==u[0]?"❚❚ ":"▶ ")+n;b.onclick=()=>playRadio(n,u);l.appendChild(b)});
 }
-function killAudio(){
-  clearTimeout(rtm);
-  if(rau){rau.onerror=rau.onplaying=null;rau.pause();rau.removeAttribute("src");try{rau.load()}catch(e){}rau=null}
-}
-function stopRadio(msg){rid++;killAudio();rcur=null;radb.classList.remove("on");rst.textContent=msg||"Radio detenida."}
+// Un único <audio> reutilizado: en iOS/Safari conserva el permiso de reproducción del primer toque,
+// así los enlaces alternos también suenan sin pedir un gesto nuevo.
+function rclear(){clearTimeout(rtm);rau.onerror=rau.onplaying=rau.onended=null}
+function stopRadio(msg){rid++;rclear();rau.pause();rau.removeAttribute("src");try{rau.load()}catch(e){}rcur=null;radb.classList.remove("on");rst.textContent=msg||"Radio detenida."}
 function attempt(id,i){
   if(id!==rid)return;
-  killAudio();
+  rclear();
   if(i>=rurls.length){
-    rcur=null;rst.textContent="No se pudo reproducir «"+rname+"» aquí. ";
+    rau.pause();rcur=null;radb.classList.remove("on");rst.textContent="No se pudo reproducir «"+rname+"» aquí. ";
     const a=document.createElement("a");a.href=rurls[0];a.target="_blank";a.rel="noopener";a.textContent="Abrir enlace directo ↗";rst.appendChild(a);
     drawRadio();return;
   }
-  const a=rau=new Audio();a.volume=vol;
+  const u=rurls[i];
+  // En páginas https el navegador bloquea los enlaces http (contenido mixto): se saltan.
+  if(location.protocol=="https:"&&/^http:/i.test(u)){attempt(id,i+1);return}
+  rgot=false;rau.volume=vol;
   rst.textContent="Conectando con "+rname+(i?" (enlace alterno "+(i+1)+")":"")+"…";
-  a.onplaying=()=>{if(id==rid){clearTimeout(rtm);rst.textContent="♪ En vivo: "+rname;radb.classList.add("on")}};
-  a.onerror=()=>{if(id==rid)attempt(id,i+1)};
-  rtm=setTimeout(()=>{if(id==rid&&a.readyState<3)attempt(id,i+1)},12000);
-  a.src=rurls[i];
-  const p=a.play();
+  rau.onplaying=()=>{if(id==rid){rgot=true;rtry=0;clearTimeout(rtm);rst.textContent="♪ En vivo: "+rname;radb.classList.add("on")}};
+  // Si un enlace falla: prueba el siguiente. Si ya sonaba y se cortó: reconecta (hasta 3 veces).
+  const lost=()=>{if(id!=rid)return;if(rgot&&rtry<3){rtry++;rst.textContent="Reconectando con "+rname+"…";attempt(id,0)}else attempt(id,i+1)};
+  rau.onerror=lost;rau.onended=lost;
+  rtm=setTimeout(()=>{if(id==rid&&rau.readyState<3)attempt(id,i+1)},10000);
+  rau.src=u;
+  const p=rau.play();
   if(p&&p.catch)p.catch(e=>{if(id==rid&&e&&e.name=="NotAllowedError"){clearTimeout(rtm);rst.textContent="El navegador bloqueó la reproducción. Toca de nuevo la emisora."}});
 }
 function playRadio(n,urls){
   if(rcur==urls[0]){stopRadio();drawRadio();return}
   if(playing)document.getElementById("music").click();
-  rid++;rname=n;rurls=urls;rcur=urls[0];drawRadio();attempt(rid,0);
+  rid++;rname=n;rurls=urls;rcur=urls[0];rtry=0;drawRadio();attempt(rid,0);
 }
 radb.onclick=()=>{drawRadio();document.getElementById("radio").classList.add("show")};
 document.getElementById("rclose").onclick=()=>document.getElementById("radio").classList.remove("show");
